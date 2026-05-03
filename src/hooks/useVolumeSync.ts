@@ -1,7 +1,8 @@
 import { useState } from "react";
 import useWebSocket from "react-use-websocket";
 
-const WS_URL = "ws://127.0.0.1:8000/ws";
+const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+const WS_URL = `${wsProtocol}//${window.location.host}/ws`;
 
 export function useVolumeSync() {
   const [volume, setVolumeLocally] = useState<number | null>(null);
