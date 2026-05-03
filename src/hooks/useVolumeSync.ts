@@ -1,5 +1,9 @@
 import { useState } from "react";
-import useWebSocket from "react-use-websocket";
+import useWebSocketImport from "react-use-websocket";
+
+const useWebSocket =
+  (useWebSocketImport as { default?: typeof useWebSocketImport }).default ??
+  useWebSocketImport;
 
 const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 const WS_URL = `${wsProtocol}//${window.location.host}/ws`;
@@ -7,7 +11,7 @@ const WS_URL = `${wsProtocol}//${window.location.host}/ws`;
 export function useVolumeSync() {
   const [volume, setVolumeLocally] = useState<number | null>(null);
 
-  const { sendMessage, readyState } = useWebSocket.default(WS_URL, {
+  const { sendMessage, readyState } = useWebSocket(WS_URL, {
     onMessage: (event) => {
       const incoming = Number(event.data);
       if (!isNaN(incoming)) setVolumeLocally(incoming);
