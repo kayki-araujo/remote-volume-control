@@ -1,73 +1,83 @@
-# React + TypeScript + Vite
+# remote-volume-control
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Control your computer's audio volume from any device on the same network — no app required. Open it on your phone, tablet, or another machine and the slider syncs in real time across every connected client.
 
-Currently, two official plugins are available:
+> **Part of a three-repo project.** Backend: [`remote-volume-control-api`](https://github.com/kayki-araujo/remote-volume-control-api) · Deployment: [`remote-volume-control-docker`](https://github.com/kayki-araujo/remote-volume-control-docker)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Demo
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+![Demo](./docs/horizontal.gif)
+![Demo](./docs/vertical.gif)
 
-## Expanding the ESLint configuration
+*Portrait and landscape layouts adapt automatically to device orientation.*
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Tech stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white&labelColor=20232a)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white&labelColor=1a1a2e)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white&labelColor=1a1a2e)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white&labelColor=0f172a)
+![Bun](https://img.shields.io/badge/Bun-1-fbf0df?logo=bun&logoColor=black)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## How it works
+
+The `useVolumeSync` hook opens a persistent WebSocket connection to the backend. Every slider move or button tap sends the new integer value over the socket. The hook also listens for incoming messages, so if another device changes the volume t`he interface updates immediately — no polling, no page refresh.
+
+```mermaid
+sequenceDiagram
+    participant Phone as 📱 Phone browser
+    participant PC as 💻 PC browser
+    participant API as 🖥️ FastAPI /ws
+
+    Phone->>API: connect
+    API-->>Phone: 50  (current volume)
+
+    PC->>API: connect
+    API-->>PC: 50  (current volume)
+
+    Phone->>API: 75
+    API-->>Phone: 75
+    API-->>PC: 75
+    Note over PC: slider jumps to 75
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The UI renders two separate layouts — portrait and landscape — and CSS hides the one that doesn't match the current orientation. On portrait devices the range slider is rendered vertically; on landscape it runs horizontally.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Running locally
+
+```bash
+bun install
+bun run dev
 ```
+
+The app connects to `ws://<current-host>/ws`. For local development, start an instance of [`remote-volume-control-api`](https://github.com/kayki-araujo/remote-volume-control-api) on the same machine; Vite's dev server will share the same origin automatically.
+
+---
+
+## Project layout
+
+```
+src/
+├── app.tsx               # Root component, responsive layout switching
+├── hooks/
+│   └── useVolumeSync.ts  # WebSocket hook — sends and receives volume state
+├── index.css             # Tailwind + IBM Plex Mono
+└── main.tsx              # Entry point
+```
+
+---
+
+## Related repositories
+
+| Repository | Description |
+|---|---|
+| [`remote-volume-control-api`](https://github.com/kayki-araujo/remote-volume-control-api) | FastAPI WebSocket server, controls system volume via `pactl` |
+| [`remote-volume-control-docker`](https://github.com/kayki-araujo/remote-volume-control-docker) | Single-container deployment — nginx + uvicorn + GitHub Actions CI |
