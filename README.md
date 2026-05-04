@@ -8,8 +8,7 @@ Control your computer's audio volume from any device on the same network — no 
 
 ## Demo
 
-<video src="./docs/horizontal.mp4" autoplay loop muted playsinline></video>
-<video src="./docs/vertical.mp4" autoplay loop muted playsinline></video>
+<video src="https://raw.githubusercontent.com/kayki-araujo/remote-volume-control/main/.docs/horizontal.mp4" autoplay loop muted playsinline></video>
 
 *Portrait and landscape layouts adapt automatically to device orientation.*
 
